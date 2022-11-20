@@ -55,6 +55,9 @@ public class BotRunner
     private Func<Cacheable<IUserMessage, ulong>, Cacheable<IMessageChannel, ulong>, SocketReaction, Task> GetReactionMethod(bool isAdded) 
         => (_, _, socketReaction) => 
         {
+            if (socketReaction.MessageId != 1044045860889170000)
+                return Task.CompletedTask;
+            
             var emoteName = socketReaction.Emote.Name;
             var user = socketReaction.User.Value as IGuildUser;
     
