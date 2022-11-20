@@ -10,6 +10,14 @@ public class Settings
         using (StreamReader streamReader = new StreamReader(Environment.CurrentDirectory + @"\Data\Settings.json")) 
             jsonAsString = streamReader.ReadToEnd();
         
-        return JsonConvert.DeserializeObject<dynamic>(jsonAsString);
+        return JsonConvert.DeserializeObject<SettingsEntity>(jsonAsString);
     }
 }
+
+public class SettingsEntity
+{
+    public string Token;
+    public ulong MessageId;
+    public ulong MentionChannelId;
+    public Dictionary<string, ulong> EmoteAndRole;
+} 
