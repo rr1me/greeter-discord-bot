@@ -60,22 +60,25 @@ public class BotRunner
     {
         _ = Task.Run(async () =>
         {
-            var chnl = _client.GetChannel(settings.MentionChannelId) as IMessageChannel;
+            var chnl = _client.GetChannel(925140676482580540) as IMessageChannel;
             var message = await chnl.GetMessageAsync(settings.MessageId);
 
             var messageText = settings.MessageText;
+
             if (message.Content != messageText)
             {
                 message = await chnl.SendMessageAsync(messageText);
-
+            
                 settings.MessageId = message.Id;
                 var settingsService = _serviceProvider.GetRequiredService<Settings>();
                 settingsService.SaveSettings(settings);
             }
-
+            
             var reactions = message.Reactions;
             CheckReactions(message, reactions);
         });
+        
+        
     }
 
     private async Task CheckReactions(IMessage message, IReadOnlyDictionary<IEmote, ReactionMetadata> reactions)
@@ -93,17 +96,17 @@ public class BotRunner
         {
             var channel = _client.GetChannel(settings.MentionChannelId) as IMessageChannel;
             var msg = await channel.SendMessageAsync(user.Mention);
-
+    
             msg.DeleteAsync();
         });
-
+    
         return Task.CompletedTask;
     }
 
     private Func<Cacheable<IUserMessage, ulong>, Cacheable<IMessageChannel, ulong>, SocketReaction, Task> GetReactionMethod(bool isAdded) 
         => (_, _, socketReaction) =>
         {
-            if (socketReaction.MessageId != settings.MessageId)
+            if (socketReaction.MessageId != settings.MessageId || socketReaction.User.Value.IsBot)
                 return Task.CompletedTask;
 
             var user = socketReaction.User.Value as IGuildUser;
