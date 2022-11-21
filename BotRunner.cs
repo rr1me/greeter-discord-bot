@@ -18,19 +18,11 @@ public class BotRunner
     {
         var config = new DiscordSocketConfig()
         {
-            GatewayIntents = 
-                GatewayIntents.GuildMessageReactions | 
-                             // GatewayIntents.DirectMessages | GatewayIntents.GuildBans | 
-                             // GatewayIntents.GuildEmojis | GatewayIntents.GuildIntegrations |
-                             // GatewayIntents.GuildInvites | 
-                             GatewayIntents.GuildMembers | 
-                             // GatewayIntents.GuildMessages | 
-                             GatewayIntents.GuildPresences | 
-            //                  GatewayIntents.GuildWebhooks | GatewayIntents.MessageContent | GatewayIntents.DirectMessageReactions |
-            //                  GatewayIntents.DirectMessageTyping | GatewayIntents.GuildMessageReactions | GatewayIntents.GuildMessageTyping |
-            //                  GatewayIntents.GuildScheduledEvents | 
-                             // GatewayIntents.GuildVoiceStates | 
-                             GatewayIntents.Guilds
+            GatewayIntents =
+                GatewayIntents.GuildMessageReactions |
+                GatewayIntents.GuildMembers |
+                GatewayIntents.GuildPresences |
+                GatewayIntents.Guilds
         };
 
         var collection = new ServiceCollection()
@@ -50,6 +42,7 @@ public class BotRunner
         settings = _serviceProvider.GetRequiredService<Settings>().GetSettings();
 
         _client.Log += Log;
+        _client.Ready += OnReady;
         _client.UserJoined += OnUserJoined;
 
         _client.ReactionAdded += GetReactionMethod(true);
@@ -63,6 +56,73 @@ public class BotRunner
         await Task.Delay(-1);
     }
 
+    private async Task OnReady()
+    {
+        var chnl = _client.GetChannel(settings.MentionChannelId) as IMessageChannel;
+        var message = await chnl.GetMessageAsync(settings.MessageId);
+
+        var messageText = settings.MessageText;
+
+        // bool newMessage = false;
+        if (message.Content != messageText)
+        {
+            message = await chnl.SendMessageAsync(messageText);
+
+            settings.MessageId = message.Id;
+            var settingsService = _serviceProvider.GetRequiredService<Settings>();
+            settingsService.SaveSettings(settings);
+            // newMessage = true;
+        }   
+
+
+        var reactions = message.Reactions;
+        await CheckReactions(message, reactions);
+
+
+        // if (newMessage)
+        // {
+        //     // foreach (var (emoteUnicode, role) in settings.EmoteAndRole)
+        //     // {
+        //     //     await message.AddReactionAsync(new Emoji(emoteUnicode));
+        //     // }
+        //
+        //     await MakeReactions(message);
+        // }
+        // else
+        // {
+        //     var reactions = message.Reactions;
+        //     if (reactions.Count == 0)
+        //     {
+        //         await MakeReactions(message);
+        //         return;
+        //     }
+        //     
+        //     foreach (var emojiUnicode in settings.EmoteAndRole.Keys)
+        //     {
+        //         if (!reactions.Keys.Select(x => x.Name).Contains(emojiUnicode))
+        //             await message.AddReactionAsync(new Emoji(emojiUnicode));
+        //     }
+        //     
+        // }
+    }
+
+    // private async Task MakeReactions(IMessage message)
+    // {
+    //     foreach (var emoteUnicode in settings.EmoteAndRole.Keys)
+    //     {
+    //         await message.AddReactionAsync(new Emoji(emoteUnicode));
+    //     }
+    // }
+
+    private async Task CheckReactions(IMessage message, IReadOnlyDictionary<IEmote, ReactionMetadata> reactions)
+    {
+        foreach (var emoteUnicode in settings.EmoteAndRole.Keys)
+        {
+            if (reactions.Count == 0 || !reactions.Keys.Select(x=>x.Name).Contains(emoteUnicode))
+                await message.AddReactionAsync(new Emoji(emoteUnicode));
+        }
+    }
+
     private async Task OnUserJoined(SocketGuildUser user)
     {
         var channel = _client.GetChannel(settings.MentionChannelId) as IMessageChannel;
@@ -72,7 +132,7 @@ public class BotRunner
     }
 
     private Func<Cacheable<IUserMessage, ulong>, Cacheable<IMessageChannel, ulong>, SocketReaction, Task> GetReactionMethod(bool isAdded) 
-        => (_, _, socketReaction) =>
+        => (userMsg, _, socketReaction) =>
         {
             if (socketReaction.MessageId != settings.MessageId)
                 return Task.CompletedTask;
