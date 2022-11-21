@@ -43,7 +43,7 @@ public class BotRunner
 
         _client.Log += Log;
         _client.Ready += OnReady;
-        // _client.UserJoined += OnUserJoined;
+        _client.UserJoined += OnUserJoined;
 
         _client.ReactionAdded += GetReactionMethod(true);
         _client.ReactionRemoved += GetReactionMethod(false);
@@ -60,13 +60,6 @@ public class BotRunner
     {
         var chnl = _client.GetChannel(settings.MentionChannelId) as IMessageChannel;
         var message = await chnl.GetMessageAsync(settings.MessageId);
-        
-        
-        // var chnl = _client.GetChannel(925140676482580540) as IMessageChannel;
-        // var message = await chnl.GetMessageAsync(1044320604024733796);
-        
-        // Console.WriteLine(message.Reactions);
-        // Console.WriteLine(message.Reactions);
 
         var messageText = settings.MessageText;
         
@@ -87,13 +80,10 @@ public class BotRunner
     {
         foreach (var emoteUnicode in settings.EmoteAndRole.Keys)
         {
-            // if (reactions.Count == 0 || !reactions.Keys.Select(x=>x.Name).Contains(emoteUnicode))
-            //     await message.AddReactionAsync(Emote.Parse(emoteUnicode));
+            if (reactions.Count == 0 || !reactions.Keys.Select(x=>x.Name).Contains(emoteUnicode))
+                await message.AddReactionAsync(Emote.Parse(emoteUnicode));
         }
     }
-    
-    // "🤔": 1044049914965012520,
-    // "🖕": 1044049961416917022,
 
     private async Task OnUserJoined(SocketGuildUser user)
     {
@@ -108,10 +98,9 @@ public class BotRunner
         {
             if (socketReaction.MessageId != settings.MessageId)
                 return Task.CompletedTask;
-            
-            var emoteId = socketReaction.Emote.ToString();
-            
+
             var user = socketReaction.User.Value as IGuildUser;
+            var emoteId = socketReaction.Emote.ToString();
 
             var emoteAndRole = settings.EmoteAndRole;
             if (isAdded)

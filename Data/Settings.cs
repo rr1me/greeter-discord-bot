@@ -36,13 +36,3 @@ public class SettingsEntity
     public ulong MentionChannelId;
     public Dictionary<string, ulong> EmoteAndRole;
 }
-
-// {
-// "token": "MTA0MjEwMzY5NDYwODU3NjUxMg.G2fNn5.vHYxNGsxpKYtb5tQf03IhnNb2hKc0YRO_qbdzM",
-// "messageId": 1044045860889170000,
-// "mentionChannelId": 1044044881468850186,
-// "emoteAndRole": {
-//     "\uD83E\uDD14": 1044049914965012520,
-//     "\uD83D\uDD95": 1044049961416917022
-// }
-// }
