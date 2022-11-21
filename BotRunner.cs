@@ -47,50 +47,65 @@ public class BotRunner
 
         _client.ReactionAdded += GetReactionMethod(true);
         _client.ReactionRemoved += GetReactionMethod(false);
-        
+
         var token = settings.Token;
 
         await _client.LoginAsync(TokenType.Bot, token);
         await _client.StartAsync();
-        
+
         await Task.Delay(-1);
     }
 
-    private async Task OnReady()
+    private Task OnReady()
     {
-        var chnl = _client.GetChannel(settings.MentionChannelId) as IMessageChannel;
-        var message = await chnl.GetMessageAsync(settings.MessageId);
-
-        var messageText = settings.MessageText;
-        
-        if (message.Content != messageText)
+        _ = Task.Run(async () =>
         {
-            message = await chnl.SendMessageAsync(messageText);
-        
-            settings.MessageId = message.Id;
-            var settingsService = _serviceProvider.GetRequiredService<Settings>();
-            settingsService.SaveSettings(settings);
-        }   
-        
-        var reactions = message.Reactions;
-        await CheckReactions(message, reactions);
+            var chnl = _client.GetChannel(settings.MentionChannelId) as IMessageChannel;
+            var message = await chnl.GetMessageAsync(settings.MessageId);
+
+            var messageText = settings.MessageText;
+
+            if (message.Content != messageText)
+            {
+                message = await chnl.SendMessageAsync(messageText);
+
+                settings.MessageId = message.Id;
+                var settingsService = _serviceProvider.GetRequiredService<Settings>();
+                settingsService.SaveSettings(settings);
+            }
+
+            var reactions = message.Reactions;
+            await CheckReactions(message, reactions);
+        });
+
+        return Task.CompletedTask;
     }
 
-    private async Task CheckReactions(IMessage message, IReadOnlyDictionary<IEmote, ReactionMetadata> reactions)
+    private Task CheckReactions(IMessage message, IReadOnlyDictionary<IEmote, ReactionMetadata> reactions)
     {
-        foreach (var emoteUnicode in settings.EmoteAndRole.Keys)
+        _ = Task.Run(async () =>
         {
-            if (reactions.Count == 0 || !reactions.Keys.Select(x=>x.Name).Contains(emoteUnicode))
-                await message.AddReactionAsync(Emote.Parse(emoteUnicode));
-        }
+            foreach (var emoteUnicode in settings.EmoteAndRole.Keys)
+            {
+                if (reactions.Count == 0 || !reactions.Keys.Select(x=>x.Name).Contains(emoteUnicode))
+                    await message.AddReactionAsync(Emote.Parse(emoteUnicode));
+            }
+        });
+        
+        return Task.CompletedTask;
     }
 
-    private async Task OnUserJoined(SocketGuildUser user)
+    private Task OnUserJoined(SocketGuildUser user)
     {
-        var channel = _client.GetChannel(settings.MentionChannelId) as IMessageChannel;
-        var msg = await channel.SendMessageAsync(user.Mention);
+        _ = Task.Run(async () =>
+        {
+            var channel = _client.GetChannel(settings.MentionChannelId) as IMessageChannel;
+            var msg = await channel.SendMessageAsync(user.Mention);
 
-        msg.DeleteAsync();
+            msg.DeleteAsync();
+        });
+
+        return Task.CompletedTask;
     }
 
     private Func<Cacheable<IUserMessage, ulong>, Cacheable<IMessageChannel, ulong>, SocketReaction, Task> GetReactionMethod(bool isAdded) 
