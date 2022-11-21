@@ -56,7 +56,7 @@ public class BotRunner
         await Task.Delay(-1);
     }
 
-    private Task OnReady()
+    private async Task OnReady()
     {
         _ = Task.Run(async () =>
         {
@@ -64,7 +64,6 @@ public class BotRunner
             var message = await chnl.GetMessageAsync(settings.MessageId);
 
             var messageText = settings.MessageText;
-
             if (message.Content != messageText)
             {
                 message = await chnl.SendMessageAsync(messageText);
@@ -75,24 +74,17 @@ public class BotRunner
             }
 
             var reactions = message.Reactions;
-            await CheckReactions(message, reactions);
+            CheckReactions(message, reactions);
         });
-
-        return Task.CompletedTask;
     }
 
-    private Task CheckReactions(IMessage message, IReadOnlyDictionary<IEmote, ReactionMetadata> reactions)
+    private async Task CheckReactions(IMessage message, IReadOnlyDictionary<IEmote, ReactionMetadata> reactions)
     {
-        _ = Task.Run(async () =>
+        foreach (var emoteUnicode in settings.EmoteAndRole.Keys)
         {
-            foreach (var emoteUnicode in settings.EmoteAndRole.Keys)
-            {
-                if (reactions.Count == 0 || !reactions.Keys.Select(x=>x.Name).Contains(emoteUnicode))
-                    await message.AddReactionAsync(Emote.Parse(emoteUnicode));
-            }
-        });
-        
-        return Task.CompletedTask;
+            if (reactions.Count == 0 || !reactions.Keys.Select(x=>x.Name).Contains(emoteUnicode))
+                message.AddReactionAsync(Emote.Parse(emoteUnicode));
+        }
     }
 
     private Task OnUserJoined(SocketGuildUser user)
