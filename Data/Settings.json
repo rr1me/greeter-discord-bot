@@ -1,10 +1,13 @@
 {
-  "Token": "MTA0MjEwMzY5NDYwODU3NjUxMg.G2fNn5.vHYxNGsxpKYtb5tQf03IhnNb2hKc0YRO_qbdzM",
-  "MessageId": 1044312215928459304,
-  "MessageText": "ну здарова",
-  "MentionChannelId": 1044044881468850186,
+  "Token": "ODYwNzgyNjMzODc3MjQxODc2.G2Trsy.Tn5tfdNAyupAR7IK7SiG1UTpdAsvdNAXZoI3_U",
+  "MessageId": 1044326408471707679,
+  "MessageText": "text msg",
+  "MentionChannelId": 925140676482580540,
   "EmoteAndRole": {
-    "🤔": 1044049914965012520,
-    "🖕": 1044049961416917022
+    "<:7Days:961018520215355483>": 961014481725575219,
+    "<:eco:947012477189754960>": 947008712986464344,
+    "<:factorio:947012416464617493>": 947009286628847677,
+    "<:conan:947012388220190731>": 947009184317194271,
+    "<:zomboid:947011575909331004>": 947008703129858109
   }
 }
