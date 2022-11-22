@@ -7,14 +7,14 @@ namespace myGreeterBot;
 
 public class Events
 {
+    private readonly IServiceProvider _serviceProvider;
+    
     private readonly DiscordSocketClient _client;
     private readonly CommandService _commands;
-    
+
     private readonly Miscellaneous _miscellaneous;
-    // private readonly Settings _settings;
     private readonly SettingsEntity _settingsEntity;
 
-    private readonly IServiceProvider _serviceProvider;
 
     public Events(DiscordSocketClient client, CommandService commands, Miscellaneous miscellaneous, Settings settings, IServiceProvider serviceProvider)
     {
@@ -60,7 +60,6 @@ public class Events
             if (socketReaction.MessageId != _settingsEntity.MessageId || socketReaction.User.Value.IsBot || !emoteAndRole.Keys.Contains(emoteId)) return;
 
             var user = socketReaction.User.Value as IGuildUser;
-
             if (isAdded)
                 user.AddRoleAsync(emoteAndRole[emoteId]);
             else
