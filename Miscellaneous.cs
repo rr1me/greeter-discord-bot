@@ -26,24 +26,41 @@ public class Miscellaneous
     
     public async Task CompareSettings()
     {
-        var chnl = _client.GetChannel(_settingsEntity.MentionChannelId) as IMessageChannel;
-        var message = await chnl.GetMessageAsync(_settingsEntity.MessageId);
+        var channel = _client.GetChannel(_settingsEntity.MentionChannelId) as IMessageChannel;
+        var messageTask = channel.GetMessageAsync(_settingsEntity.MessageId);
+        var message = messageTask.IsFaulted ? await SendNewMessage(channel) : await CheckMessage(await messageTask);
+        
+        CheckReactions(message);
+    }
+
+    private async Task<IMessage> CheckMessage(IMessage message)
+    {
+        var channel = message.Channel;
+        var botId = _client.CurrentUser.Id;
+
+        if (message.Author.Id != botId)
+            return await SendNewMessage(channel);
 
         var messageText = _settingsEntity.MessageText;
         if (message.Content != messageText)
-        {
-            message = await chnl.SendMessageAsync(messageText);
-            
-            _settingsEntity.MessageId = message.Id;
-            _settings.SaveSettings(_settingsEntity);
-        }
-            
-        var reactions = message.Reactions;
-        CheckReactions(message, reactions);
+            return await channel.ModifyMessageAsync(message.Id, properties => properties.Content = messageText);
+
+        return message;
     }
     
-    public async Task CheckReactions(IMessage message, IReadOnlyDictionary<IEmote, ReactionMetadata> reactions)
+    private async Task<IMessage> SendNewMessage(IMessageChannel channel)
     {
+        var messageText = _settingsEntity.MessageText;
+        var message = await channel.SendMessageAsync(messageText);
+            
+        _settingsEntity.MessageId = message.Id;
+        _settings.SaveSettings(_settingsEntity);
+        return message;
+    }
+    
+    private async Task CheckReactions(IMessage message)
+    {
+        var reactions = message.Reactions;
         var formalReactions = _settingsEntity.EmoteAndRole.Keys;
 
         if (reactions.Count > formalReactions.Count)

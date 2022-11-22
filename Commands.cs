@@ -12,6 +12,7 @@ public class Commands : ModuleBase<SocketCommandContext>
     }
 
     [Command("updateSettings")]
+    // [RequireUserPermission(GuildPermission.Administrator)]
     public async Task UpdateSettings()
     {
         await _miscellaneous.UpdateSettings();

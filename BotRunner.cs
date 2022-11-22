@@ -35,8 +35,7 @@ public class BotRunner
             .AddSingleton<Settings>()
             .AddSingleton<Events>()
             .AddSingleton<Miscellaneous>();
-
-        Console.WriteLine(collection.BuildServiceProvider());
+        
         return collection.BuildServiceProvider();
     }
 
