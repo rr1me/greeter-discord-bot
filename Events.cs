@@ -13,7 +13,7 @@ public class Events
     private readonly CommandService _commands;
 
     private readonly Miscellaneous _miscellaneous;
-    private readonly SettingsEntity _settingsEntity;
+    private readonly Settings _settings;
 
 
     public Events(DiscordSocketClient client, CommandService commands, Miscellaneous miscellaneous, Settings settings, IServiceProvider serviceProvider)
@@ -21,7 +21,7 @@ public class Events
         _client = client;
         _commands = commands;
         _miscellaneous = miscellaneous;
-        _settingsEntity = settings._settingsEntity;
+        _settings = settings;
         _serviceProvider = serviceProvider;
     }
 
@@ -45,6 +45,8 @@ public class Events
     public Task OnUserJoined(SocketGuildUser user) => 
         Task.Run(async () => 
         {
+            var _settingsEntity = _settings._settingsEntity;
+            
             var channel = _client.GetChannel(_settingsEntity.MentionChannelId) as IMessageChannel;
             var msg = await channel.SendMessageAsync(user.Mention);
     
@@ -54,6 +56,8 @@ public class Events
     public Func<Cacheable<IUserMessage, ulong>, Cacheable<IMessageChannel, ulong>, SocketReaction, Task> GetReactionMethod(bool isAdded) 
         => async (_, _, socketReaction) =>
         {
+            var _settingsEntity = _settings._settingsEntity;
+            
             var emoteAndRole = _settingsEntity.EmoteAndRole;
             var emoteId = socketReaction.Emote.ToString();
 

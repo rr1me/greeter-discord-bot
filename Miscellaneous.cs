@@ -28,8 +28,22 @@ public class Miscellaneous
     {
         var channel = _client.GetChannel(_settingsEntity.MentionChannelId) as IMessageChannel;
         var messageTask = channel.GetMessageAsync(_settingsEntity.MessageId);
-        var message = messageTask.IsFaulted ? await SendNewMessage(channel) : await CheckMessage(await messageTask);
-        
+
+        IMessage message;
+        if (messageTask.IsFaulted)
+            message = await SendNewMessage(channel);
+        else
+        {
+            try
+            {
+                message = await CheckMessage(await messageTask);
+            }
+            catch
+            {
+                message = await SendNewMessage(channel);
+            }
+        }
+
         CheckReactions(message);
     }
 
