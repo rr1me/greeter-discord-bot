@@ -4,7 +4,8 @@ namespace myGreeterBot.Data;
 
 public class Settings
 {
-
+    public SettingsEntity _settingsEntity;
+    
     private readonly string JsonPath = Environment.CurrentDirectory + @"\Data\Settings.json";
     
     public dynamic GetSettings()
@@ -13,7 +14,8 @@ public class Settings
         using (StreamReader streamReader = new StreamReader(JsonPath)) 
             jsonAsString = streamReader.ReadToEnd();
         
-        return JsonConvert.DeserializeObject<SettingsEntity>(jsonAsString);
+        _settingsEntity = JsonConvert.DeserializeObject<SettingsEntity>(jsonAsString);
+        return _settingsEntity;
     }
 
     public void SaveSettings(SettingsEntity settings)
